@@ -1,10 +1,12 @@
 import socket, ssl
 from smtp.mail import Mail
+from utils.confirm import confirm
 
 endmsg = "\r\n.\r\n"
 mail = Mail()
+active = True
 
-while True:
+while active:
     mail.create()
 
     # Создаем сокет ssl socket и устанавливаем TCP-соединение с почтовым сервером
@@ -59,3 +61,5 @@ while True:
     print recv6
     if recv6[:3] != '221':
         print 'код 221 от сервера не получен.'
+
+    active = confirm("Continue?")
