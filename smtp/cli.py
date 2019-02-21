@@ -1,8 +1,8 @@
 import socket, ssl, base64, sys
 
 endmsg = '\r\n.\r\n'
-user = '****'
-password = '****'
+user = '*****'
+password = '*****'
 mailTo = raw_input("To: ")
 subject = raw_input("Subject: ")
 message = raw_input("Message: ")
@@ -57,21 +57,21 @@ if recv[:3] != '235':
     print '235 reply not received from server.'
 
 # Send command MAIL FROM
-ssl_socket.send('MAIL FROM: <' + user + '>')
+ssl_socket.send('MAIL FROM:<' + user + '>\r\n')
 recv = ssl_socket.recv(1024)
 print recv
 if recv[:3] != '250':
     print 'did not get code 250'
 
 # Send command RCPT TO
-ssl_socket.send('RCPT TO: <' + mailTo + '>')
+ssl_socket.send('RCPT TO:<' + mailTo + '>\r\n')
 recv = ssl_socket.recv(1024)
 print recv
 if recv[:3] != '250':
     print 'did not get code 250'
 
 # Send command DATA
-ssl_socket.send('DATA')
+ssl_socket.send('DATA\r\n')
 recv = ssl_socket.recv(1024)
 print recv
 if recv[:3] != '354':
@@ -84,13 +84,6 @@ recv = ssl_socket.recv(1024)
 print recv
 if recv[:3] != '250':
     print 'did not get code 250'
-
-# Send command QUIT
-ssl_socket.send('QUIT')
-recv = ssl_socket.recv(1024)
-print recv
-if recv[:3] != '221':
-    print 'did not get code 221'
 
 ssl_socket.close()
 sys.exit()
