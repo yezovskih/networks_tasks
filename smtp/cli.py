@@ -1,65 +1,96 @@
-import socket, ssl
-from smtp.mail import Mail
-from utils.confirm import confirm
+import socket, ssl, base64, sys
 
-endmsg = "\r\n.\r\n"
-mail = Mail()
-active = True
+endmsg = '\r\n.\r\n'
+user = '****'
+password = '****'
+mailTo = raw_input("To: ")
+subject = raw_input("Subject: ")
+message = raw_input("Message: ")
 
-while active:
-    mail.create()
+socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket.connect(('smtp.gmail.com', 587))
+recv = socket.recv(1024)
+print recv
+if recv[:3] != '220':
+    print 'did not get code 220'
 
-    # Создаем сокет ssl socket и устанавливаем TCP-соединение с почтовым сервером
-    socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    context = ssl.create_default_context()
-    ssl_socket = context.wrap_socket(socket, server_side=True)
-    ssl_socket.connect(("smtp.gmail.com", 587))
-    recv = ssl_socket.recv(1024)
-    print recv
-    if recv[:3] != '220':
-         print 'код 220 от сервера не получен.'
+# Send command HELO
+socket.send('EHLO 127.0.1.1\r\n')
+recv = socket.recv(1024)
+print recv
+if recv[:3] != '250':
+    print 'did not get code 250'
 
-    # Отправляем команду HELO и выводим ответ сервера.
-    ssl_socket.send('HELO\r\n')
-    recv1 = ssl_socket.recv(1024)
-    print recv1
-    if recv1[:3] != '250':
-        print 'код 250 от сервера не получен.'
+# Send STARTTLS command to server and print server response
+socket.send("STARTTLS\r\n")
+recv = socket.recv(1024)
+print recv
+if recv[:3] != '220':
+    print '220 reply not received from server.'
 
-    # Отправляем команду MAIL FROM и выводим ответ сервера. # Начало вставки
-    ssl_socket.send('MAIL FROM: <' + mail.mailFrom + '>')
-    recv2 = ssl_socket.recv(1024)
-    print recv2
-    if recv2[:3] != '250':
-        print 'код 250 от сервера не получен.'
+ssl_socket = ssl.wrap_socket(socket)
 
-    # Отправляем команду RCPT TO и выводим ответ сервера.
-    ssl_socket.send('RCPT TO: <' + mail.mailTo + '>')
-    recv3 = ssl_socket.recv(1024)
-    print recv3
-    if recv3[:3] != '250':
-        print 'код 250 от сервера не получен.'
+# Send command HELO
+ssl_socket.send('EHLO 127.0.1.1\r\n')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '250':
+    print 'did not get code 250'
 
-    # Отправляем команду DATA и выводим ответ сервера.
-    ssl_socket.send('DATA')
-    recv4 = ssl_socket.recv(1024)
-    print recv4
-    if recv4[:3] != '354':
-        print 'код 354 от сервера не получен.'
+# Send command AUTH LOGIN
+ssl_socket.send('AUTH LOGIN\r\n')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '334':
+    print '334 reply not received from server.'
 
-    # Отправляем данные сообщения.
-    ssl_socket.send(mail.message)
-    ssl_socket.send(endmsg)
-    recv5 = ssl_socket.recv(1024)
-    print recv5
-    if recv5[:3] != '250':
-        print 'код 250 от сервера не получен.'
+ssl_socket.send(base64.b64encode(user)+'\r\n')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '334':
+    print '334 reply not received from server.'
 
-    # Отправляем команду QUIT и получаем ответ сервера.
-    ssl_socket.send('QUIT')
-    recv6 = ssl_socket.recv(1024)
-    print recv6
-    if recv6[:3] != '221':
-        print 'код 221 от сервера не получен.'
+ssl_socket.send(base64.b64encode(password)+'\r\n')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '235':
+    print '235 reply not received from server.'
 
-    active = confirm("Continue?")
+# Send command MAIL FROM
+ssl_socket.send('MAIL FROM: <' + user + '>')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '250':
+    print 'did not get code 250'
+
+# Send command RCPT TO
+ssl_socket.send('RCPT TO: <' + mailTo + '>')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '250':
+    print 'did not get code 250'
+
+# Send command DATA
+ssl_socket.send('DATA')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '354':
+    print 'did not get code 250'
+
+# Send message
+ssl_socket.send("Subject: " + subject + "\r\n\r\n" + message + "\r\n.\r\n")
+ssl_socket.send(endmsg)
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '250':
+    print 'did not get code 250'
+
+# Send command QUIT
+ssl_socket.send('QUIT')
+recv = ssl_socket.recv(1024)
+print recv
+if recv[:3] != '221':
+    print 'did not get code 221'
+
+ssl_socket.close()
+sys.exit()
