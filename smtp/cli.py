@@ -1,4 +1,4 @@
-import socket, ssl, base64, sys
+import socket, ssl, base64
 
 endmsg = '\r\n.\r\n'
 user = '*****'
@@ -86,4 +86,3 @@ if recv[:3] != '250':
     print 'did not get code 250'
 
 ssl_socket.close()
-sys.exit()
