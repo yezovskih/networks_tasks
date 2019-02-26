@@ -1,8 +1,8 @@
 import socket, ssl, base64
 
 endmsg = '\r\n.\r\n'
-user = '*****'
-password = '*****'
+user = '******'
+password = '******'
 mailTo = raw_input("To: ")
 subject = raw_input("Subject: ")
 message = raw_input("Message: ")
