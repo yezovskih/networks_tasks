@@ -8,7 +8,7 @@ clientSocket.settimeout(1)
 for messageCounter in range(1, 10):
     now = time()
 
-    message = 'Ping ' + messageCounter + ' ' + now
+    message = 'Ping ' + str(messageCounter) + ' ' + str(now)
     print message
 
     try:
@@ -18,7 +18,7 @@ for messageCounter in range(1, 10):
 
         rtt_time = time() - now
         print 'RTT time: ', rtt_time
-    except socket.timeout as err:
+    except timeout as err:
         print 'Request timed out'
 
 clientSocket.close()
